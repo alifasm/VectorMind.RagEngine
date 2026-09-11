@@ -1,0 +1,6 @@
+@VectorMind.RagEngine.Api_HostAddress = http://localhost:5157
+
+GET {{VectorMind.RagEngine.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
