@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace VectorMind.RagEngine.Domain.Interfaces;
 
 public interface IEmbeddingService
 {
-    Task GenerateEmbeddingAsync(string text);
+    Task<float[]> GenerateEmbeddingAsync(string text);
 }

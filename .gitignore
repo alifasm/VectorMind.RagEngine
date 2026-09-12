@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+**/appsettings.json
+/VectorMind.RagEngine.Api/Program.cs
+/VectorMind.RagEngine.Api/appsettings.json
+
+qdrant_storage/
+/VectorMind.RagEngine.Api/appsettings.json

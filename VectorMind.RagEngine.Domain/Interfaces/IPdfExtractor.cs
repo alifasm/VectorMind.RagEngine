@@ -8,5 +8,5 @@ namespace VectorMind.RagEngine.Domain.Interfaces;
 
 public interface IPdfExtractor
 {
-    Task ExtractTextAsync(Stream pdfStream);
+    Task<string> ExtractTextAsync(Stream pdfStream);
 }
