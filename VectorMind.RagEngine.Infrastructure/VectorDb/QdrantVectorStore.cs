@@ -15,9 +15,11 @@ namespace VectorMind.RagEngine.Infrastructure.VectorDb
         private const string CollectionName = "pdf_documents";
         private const ulong VectorSize = 768;
 
-        public QdrantVectorStore(string host, int port)
+        public QdrantVectorStore(string host, int port, string? apiKey = null)
         {
-            _client = new QdrantClient(host, port);
+            _client = apiKey != null
+                ? new QdrantClient(host, port, https: true, apiKey: apiKey)
+                : new QdrantClient(host, port);
         }
 
         public async Task InitializeCollectionAsync()

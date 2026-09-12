@@ -27,8 +27,9 @@ builder.Services.AddSingleton<IEmbeddingService>(sp =>
 // Register Qdrant Vector Store
 var qdrantHost = builder.Configuration["Qdrant:Host"] ?? "localhost";
 var qdrantPort = int.Parse(builder.Configuration["Qdrant:Port"] ?? "6334");
-builder.Services.AddSingleton<IVectorStore>(sp => new QdrantVectorStore(qdrantHost, qdrantPort));
+var qdrantApiKey = builder.Configuration["Qdrant:ApiKey"]; // null for local Docker, set for cloud
 
+builder.Services.AddSingleton<IVectorStore>(sp => new QdrantVectorStore(qdrantHost, qdrantPort, qdrantApiKey));
 var app = builder.Build();
 
 // Configure HTTP request pipeline
