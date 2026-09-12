@@ -1,3 +1,4 @@
+using Microsoft.OpenApi.Models;
 using VectorMind.RagEngine.Domain.Interfaces;
 using VectorMind.RagEngine.Infrastructure.Services;
 using VectorMind.RagEngine.Infrastructure.VectorDb;
@@ -7,7 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "VectorMind RAG Engine API",
+        Version = "v1",
+        Description = "A Retrieval-Augmented Generation API that extracts text from PDFs, embeds it, and answers questions using Qdrant vector search and Gemini."
+    });
+});
 
 // Register HttpClient for Gemini API
 builder.Services.AddHttpClient();
