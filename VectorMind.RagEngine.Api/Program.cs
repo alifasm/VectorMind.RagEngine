@@ -33,7 +33,9 @@ builder.Services.AddSingleton<IVectorStore>(sp => new QdrantVectorStore(qdrantHo
 var app = builder.Build();
 
 // Configure HTTP request pipeline
-if (app.Environment.IsDevelopment())
+var enableSwagger = builder.Configuration.GetValue<bool>("ENABLE_SWAGGER");
+
+if (app.Environment.IsDevelopment() || enableSwagger)
 {
     app.UseSwagger();
     app.UseSwaggerUI();
@@ -42,6 +44,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+// Friendly root route -> redirect to Swagger
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 // Ensure Qdrant collection exists on startup
 using (var scope = app.Services.CreateScope())
