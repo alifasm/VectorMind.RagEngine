@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,17 +17,23 @@ public class DocumentsController : ControllerBase
     private readonly ITextChunker _textChunker;
     private readonly IEmbeddingService _embeddingService;
     private readonly IVectorStore _vectorStore;
+    private readonly IAnswerGenerationService _answerGenerationService;
+    private readonly IRerankerService _rerankerService;
 
     public DocumentsController(
-        IPdfExtractor pdfExtractor,
-        ITextChunker textChunker,
-        IEmbeddingService embeddingService,
-        IVectorStore vectorStore)
+    IPdfExtractor pdfExtractor,
+    ITextChunker textChunker,
+    IEmbeddingService embeddingService,
+    IVectorStore vectorStore,
+    IAnswerGenerationService answerGenerationService,
+    IRerankerService rerankerService)  
     {
         _pdfExtractor = pdfExtractor;
         _textChunker = textChunker;
         _embeddingService = embeddingService;
         _vectorStore = vectorStore;
+        _answerGenerationService = answerGenerationService;
+        _rerankerService = rerankerService;  
     }
 
     [HttpPost("upload")]
@@ -71,12 +78,23 @@ public class DocumentsController : ControllerBase
         if (string.IsNullOrWhiteSpace(question))
             return BadRequest("Query question cannot be empty.");
 
-        // 1. Convert question into a 768-dim vector
         var queryVector = await _embeddingService.GenerateEmbeddingAsync(question);
 
-        // 2. Execute similarity search in Qdrant
-        var results = await _vectorStore.SearchSimilarAsync(queryVector, limit: 3);
+        // Stage 1 — recall: cast a wide net with fast vector search
+        var candidates = await _vectorStore.SearchSimilarAsync(queryVector, limit: 15);
 
-        return Ok(results);
+        if (candidates.Count == 0)
+            return Ok(new { Answer = "No relevant content found for this question.", Sources = new object[0] });
+
+        // Stage 2 — precision: rerank candidates and keep the best 3
+        var topResults = await _rerankerService.RerankAsync(question, candidates, topN: 3);
+
+        var answer = await _answerGenerationService.GenerateAnswerAsync(question, topResults);
+
+        return Ok(new
+        {
+            Answer = answer,
+            Sources = topResults.Select(r => new { r.DocumentName, r.ChunkIndex })
+        });
     }
 }

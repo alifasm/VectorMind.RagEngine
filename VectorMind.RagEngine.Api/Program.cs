@@ -33,12 +33,29 @@ builder.Services.AddSingleton<IEmbeddingService>(sp =>
     return new GeminiEmbeddingService(httpClient, apiKey);
 });
 
+builder.Services.AddSingleton<IAnswerGenerationService>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    var apiKey = builder.Configuration["Gemini:ApiKey"]
+        ?? throw new InvalidOperationException("Gemini:ApiKey is missing from configuration.");
+    return new GeminiChatService(httpClient, apiKey);
+});
+
+builder.Services.AddSingleton<IRerankerService>(sp =>
+{
+    var httpClient = sp.GetRequiredService<HttpClient>();
+    var apiKey = builder.Configuration["Gemini:ApiKey"]
+        ?? throw new InvalidOperationException("Gemini:ApiKey is missing from configuration.");
+    return new GeminiRerankerService(httpClient, apiKey);
+});
+
 // Register Qdrant Vector Store
 var qdrantHost = builder.Configuration["Qdrant:Host"] ?? "localhost";
 var qdrantPort = int.Parse(builder.Configuration["Qdrant:Port"] ?? "6334");
 var qdrantApiKey = builder.Configuration["Qdrant:ApiKey"]; // null for local Docker, set for cloud
 
 builder.Services.AddSingleton<IVectorStore>(sp => new QdrantVectorStore(qdrantHost, qdrantPort, qdrantApiKey));
+
 var app = builder.Build();
 
 // Configure HTTP request pipeline
